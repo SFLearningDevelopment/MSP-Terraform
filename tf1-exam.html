@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026092901 -->
+<!-- build: 2026092902 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -129,7 +129,7 @@ footer{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;
 <body>
 <header class="masthead">
   <div class="wrap">
-    <p class="crumb"><span id="who" class="who"></span><a class="back" href="index.html?v=2026092901">&#8592; Dashboard</a> &middot; SF Knowledge Hub &middot; Terraform: Basic to Intermediate</p>
+    <p class="crumb"><span id="who" class="who"></span><a class="back" href="index.html?v=2026092902">&#8592; Dashboard</a> &middot; SF Knowledge Hub &middot; Terraform: Basic to Intermediate</p>
     <p><span class="chip">Course 1 certification</span></p>
     <h1>Certification: exam and graded lab</h1>
     <p class="deck">Pass the exam and submit the graded lab. You can do the two parts in either order.</p>
@@ -152,7 +152,7 @@ footer{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;
 <div class="orient" id="locked" hidden>
   <h2>Finish all seven modules first</h2>
   <p>The certification opens when every module is marked complete. You have <span id="lockcount">0</span> of 7 done.</p>
-  <p><a class="pbtn" href="index.html?v=2026092901">Back to the dashboard</a></p>
+  <p><a class="pbtn" href="index.html?v=2026092902">Back to the dashboard</a></p>
 </div>
 
 <div id="content" hidden>
@@ -223,13 +223,13 @@ terraform destroy               # always clean up</pre>
 </div>
 
 <div class="pager">
-  <a class="pbtn ghost" href="index.html?v=2026092901">&#8592; Dashboard</a>
+  <a class="pbtn ghost" href="index.html?v=2026092902">&#8592; Dashboard</a>
   <span></span>
 </div>
 
 <footer>
   <div>SF Knowledge Hub &middot; Terraform: Basic to Intermediate &middot; Certification</div>
-  <div>build 2026092901</div>
+  <div>build 2026092902</div>
 </footer>
 
 </div>
@@ -246,7 +246,7 @@ terraform destroy               # always clean up</pre>
   .score{font-family:var(--sans);font-size:26px;font-weight:660;margin:0 0 6px}
   .score.pass{color:var(--ok)} .score.fail{color:var(--caution)}
 </style>
-<script src="tf1-question-bank.js?v=2026092901"></script>
+<script src="tf1-question-bank.js?v=2026092902"></script>
 
 <!-- SF auth gate: Google SSO or email/password sign-in. -->
 <script>
@@ -261,6 +261,8 @@ terraform destroy               # always clean up</pre>
     appId: "1:227322696511:web:12e7ced7dd3d45fa06798a"
   };
   const ALLOWED_DOMAIN = "sourcefuse.com";
+  /* Admins: always allowed in, without a nomination. */
+  const ADMINS = ["jv.ravichandran@sourcefuse.com", "noushin.khan@sourcefuse.com"];
 
   /* `courses` document id for this course. Nominations are read from
      courses/{COURSE_ID}/nominations/{email}, managed in the SF Knowledge Hub. */
@@ -329,7 +331,9 @@ terraform destroy               # always clean up</pre>
   /* Same check as the SF Knowledge Hub: this course's nominations document
      for the email exists and is not marked nominated: false. */
   async function isNominated(x){
-    if (typeof x !== "string" || !readNomination) return false;
+    if (typeof x !== "string") return false;
+    if (ADMINS.indexOf(x.toLowerCase()) !== -1) return true;
+    if (!readNomination) return false;
     try {
       const s = await readNomination(x.toLowerCase());
       return s.exists() && s.data().nominated !== false;
