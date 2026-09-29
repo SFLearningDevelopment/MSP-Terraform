@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026092801 -->
+<!-- build: 2026092901 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -129,10 +129,10 @@ footer{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;
 <body>
 <header class="masthead">
   <div class="wrap">
-    <p class="crumb"><span id="who" class="who"></span><a class="back" href="index.html?v=2026092801">&#8592; Dashboard</a> &middot; SF Knowledge Hub &middot; Terraform: Basic to Intermediate</p>
+    <p class="crumb"><span id="who" class="who"></span><a class="back" href="index.html?v=2026092901">&#8592; Dashboard</a> &middot; SF Knowledge Hub &middot; Terraform: Basic to Intermediate</p>
     <p><span class="chip">Course 1 certification</span></p>
     <h1>Certification: exam and graded lab</h1>
-    <p class="deck">Pass the exam and have your graded lab approved to complete the Course 1 certification. You can do the two parts in either order.</p>
+    <p class="deck">Pass the exam and submit the graded lab. You can do the two parts in either order.</p>
     <div class="facts">
       <div><b>Part A</b>Exam: 40 questions, 60 minutes</div>
       <div><b>Pass mark</b>70% (28 of 40)</div>
@@ -152,7 +152,7 @@ footer{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;
 <div class="orient" id="locked" hidden>
   <h2>Finish all seven modules first</h2>
   <p>The certification opens when every module is marked complete. You have <span id="lockcount">0</span> of 7 done.</p>
-  <p><a class="pbtn" href="index.html?v=2026092801">Back to the dashboard</a></p>
+  <p><a class="pbtn" href="index.html?v=2026092901">Back to the dashboard</a></p>
 </div>
 
 <div id="content" hidden>
@@ -223,13 +223,13 @@ terraform destroy               # always clean up</pre>
 </div>
 
 <div class="pager">
-  <a class="pbtn ghost" href="index.html?v=2026092801">&#8592; Dashboard</a>
+  <a class="pbtn ghost" href="index.html?v=2026092901">&#8592; Dashboard</a>
   <span></span>
 </div>
 
 <footer>
   <div>SF Knowledge Hub &middot; Terraform: Basic to Intermediate &middot; Certification</div>
-  <div>build 2026092801</div>
+  <div>build 2026092901</div>
 </footer>
 
 </div>
@@ -246,7 +246,7 @@ terraform destroy               # always clean up</pre>
   .score{font-family:var(--sans);font-size:26px;font-weight:660;margin:0 0 6px}
   .score.pass{color:var(--ok)} .score.fail{color:var(--caution)}
 </style>
-<script src="tf1-question-bank.js?v=2026092801"></script>
+<script src="tf1-question-bank.js?v=2026092901"></script>
 
 <!-- SF auth gate: Google SSO or email/password sign-in. -->
 <script>
@@ -264,7 +264,7 @@ terraform destroy               # always clean up</pre>
 
   /* `courses` document id for this course. Nominations are read from
      courses/{COURSE_ID}/nominations/{email}, managed in the SF Knowledge Hub. */
-  const COURSE_ID = "REPLACE_WITH_COURSE_ID";
+  const COURSE_ID = "aforhkSksWv5MZik5Dz7";
 
   /* True when the page is shown inside another page (the SF Knowledge Hub). */
   const IN_FRAME = (function(){ try { return window.self !== window.top; } catch (_) { return true; } })();
@@ -444,7 +444,7 @@ terraform destroy               # always clean up</pre>
 <script type="module">
 (function(){
   /* `courses` document id for this course. Same value in every file of this course. */
-  var CP_COURSE_ID = "REPLACE_WITH_COURSE_ID";
+  var CP_COURSE_ID = "aforhkSksWv5MZik5Dz7";
 
   var MODULE_KEYS = ["tf1-m1", "tf1-m2", "tf1-m3", "tf1-m4", "tf1-m5", "tf1-m6", "tf1-m7"];
   var SECTION_TOTALS = {"tf1-m1": 4, "tf1-m2": 4, "tf1-m3": 4, "tf1-m4": 4, "tf1-m5": 4, "tf1-m6": 4, "tf1-m7": 4};   /* sections per module */
@@ -550,12 +550,11 @@ terraform destroy               # always clean up</pre>
     return fs.setDoc(prRef, upd, { merge: true });
   }
 
-  /* Graded lab: stored on the course object for admin review. */
+  /* Graded lab: the pasted plan and apply output, stored on the course object. */
   function submitLab(plan, apply){
     var t = stamp();
-    var lab = { planOutput: plan, applyOutput: apply, submittedOn: t.date, submittedAt: t.time,
-                status: "Pending review", reviewNote: "" };
-    var o = lsRead(); o.lab = { submittedOn: t.date, submittedAt: t.time, status: "Pending review", reviewNote: "" }; lsWrite(o);
+    var lab = { planOutput: plan, applyOutput: apply, submittedOn: t.date, submittedAt: t.time };
+    var o = lsRead(); o.lab = { submittedOn: t.date, submittedAt: t.time }; lsWrite(o);
     if (!ready) return Promise.reject(new Error("offline"));
     var update = base(); update.courses[CP_COURSE_ID] = { lab: lab };
     courseObj.lab = lab;
@@ -605,15 +604,6 @@ terraform destroy               # always clean up</pre>
     });
   }
 
-  /* Course 1 certification: exam passed and lab approved. Written once. */
-  function markCertified(){
-    if (!ready || courseObj.certifiedOn) return Promise.resolve(courseObj.certifiedOn || null);
-    var t = stamp();
-    var update = base(); update.courses[CP_COURSE_ID] = { certifiedOn: t.date, certifiedAt: t.time };
-    courseObj.certifiedOn = t.date; courseObj.certifiedAt = t.time;
-    return fs.setDoc(cpRef, update, { merge: true }).then(function(){ return t.date; });
-  }
-
   /* ---- Boot ------------------------------------------------------------ */
   async function start(u, moduleKey, onState){
     user = u;
@@ -646,8 +636,7 @@ terraform destroy               # always clean up</pre>
       var o = lsRead();
       o.modules = Object.assign({}, local.modules || {}, courseObj.modules || {});
       if (courseObj.lab) {
-        o.lab = { submittedOn: courseObj.lab.submittedOn, submittedAt: courseObj.lab.submittedAt,
-                  status: courseObj.lab.status || "Pending review", reviewNote: courseObj.lab.reviewNote || "" };
+        o.lab = { submittedOn: courseObj.lab.submittedOn, submittedAt: courseObj.lab.submittedAt };
       }
       if (examObj) {
         var le = o.exam || {};
@@ -733,8 +722,6 @@ terraform destroy               # always clean up</pre>
     tickSection: tickSection,
     submitLab: submitLab,
     recordExam: recordExam,
-    markCertified: markCertified,
-    certifiedOn: function(){ return courseObj.certifiedOn || null; },
     labRemote: function(){ return courseObj.lab || null; },
     examRemote: function(){ return examObj; },
     isReady: function(){ return ready; },
@@ -776,11 +763,10 @@ terraform destroy               # always clean up</pre>
 
     var ei = examInfo(state);
     var lab = state.lab || null;
-    var labStatus = lab ? (lab.status || 'Pending review') : null;
-    var parts = (ei.passed ? 1 : 0) + (labStatus === 'Approved' ? 1 : 0);
+    var labDone = !!(lab && lab.submittedOn);
+    var parts = (ei.passed ? 1 : 0) + (labDone ? 1 : 0);
     $('fill').style.width = (parts / 2) * 100 + '%';
-    $('count').textContent = parts === 2 ? 'Course 1 certification achieved'
-      : 'Exam: ' + (ei.passed ? 'passed' : 'not passed yet') + ' \u00b7 Lab: ' + (labStatus ? labStatus.toLowerCase() : 'not submitted');
+    $('count').textContent = 'Exam: ' + (ei.passed ? 'passed' : 'not passed yet') + ' \u00b7 Lab: ' + (labDone ? 'submitted' : 'not submitted');
 
     /* Exam status */
     var st;
@@ -796,14 +782,10 @@ terraform destroy               # always clean up</pre>
 
     /* Lab status */
     var lt;
-    if (!labStatus) lt = 'Not submitted.';
-    else if (labStatus === 'Approved') lt = 'Approved. Well done.';
-    else if (labStatus === 'Needs rework') lt = 'Needs rework' + (lab.reviewNote ? ': ' + lab.reviewNote : '.') + ' Fix the issues and submit again.';
-    else lt = 'Submitted on ' + (lab.submittedOn || '') + (lab.submittedAt ? ' at ' + lab.submittedAt : '') + '. Waiting for review. You can submit again to replace it.';
+    if (!labDone) lt = 'Not submitted.';
+    else lt = 'Submitted on ' + (lab.submittedOn || '') + (lab.submittedAt ? ' at ' + lab.submittedAt : '') + '. You can submit again to replace it.';
     $('labstatustext').textContent = lt;
-    var locked = labStatus === 'Approved';
-    $('labplan').disabled = locked; $('labapply').disabled = locked; $('labsubmit').disabled = locked;
-    if (!locked && labStatus) $('labsubmit').textContent = 'Submit again';
+    if (labDone) $('labsubmit').textContent = 'Submit again';
   }
 
   /* ---------- exam run ---------- */
