@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026092901 -->
+<!-- build: 2026092902 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -129,7 +129,7 @@ footer{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;
 <body>
 <header class="masthead">
   <div class="wrap">
-    <p class="crumb"><span id="who" class="who"></span><a class="back" href="index.html?v=2026092901">&#8592; Dashboard</a> &middot; SF Knowledge Hub &middot; Terraform: Basic to Intermediate</p>
+    <p class="crumb"><span id="who" class="who"></span><a class="back" href="index.html?v=2026092902">&#8592; Dashboard</a> &middot; SF Knowledge Hub &middot; Terraform: Basic to Intermediate</p>
     <p><span class="chip">Module 7 of 7</span></p>
     <h1>State Basics</h1>
     <p class="deck">What the state file is for, what the local backend does, and how to read state safely.</p>
@@ -319,13 +319,13 @@ ls                                     # terraform.tfstate is still here, now wi
 </div>
 
 <div class="pager">
-  <a class="pbtn ghost" href="tf1-m6.html?v=2026092901">&#8592; Module 6</a>
-  <a class="pbtn off" id="nextbtn" href="tf1-exam.html?v=2026092901">Certification &#8594;</a>
+  <a class="pbtn ghost" href="tf1-m6.html?v=2026092902">&#8592; Module 6</a>
+  <a class="pbtn off" id="nextbtn" href="tf1-exam.html?v=2026092902">Certification &#8594;</a>
 </div>
 
 <footer>
   <div>SF Knowledge Hub &middot; Terraform: Basic to Intermediate &middot; Module 7 of 7</div>
-  <div>build 2026092901</div>
+  <div>build 2026092902</div>
 </footer>
 
 </div>
@@ -343,6 +343,8 @@ ls                                     # terraform.tfstate is still here, now wi
     appId: "1:227322696511:web:12e7ced7dd3d45fa06798a"
   };
   const ALLOWED_DOMAIN = "sourcefuse.com";
+  /* Admins: always allowed in, without a nomination. */
+  const ADMINS = ["jv.ravichandran@sourcefuse.com", "noushin.khan@sourcefuse.com"];
 
   /* `courses` document id for this course. Nominations are read from
      courses/{COURSE_ID}/nominations/{email}, managed in the SF Knowledge Hub. */
@@ -411,7 +413,9 @@ ls                                     # terraform.tfstate is still here, now wi
   /* Same check as the SF Knowledge Hub: this course's nominations document
      for the email exists and is not marked nominated: false. */
   async function isNominated(x){
-    if (typeof x !== "string" || !readNomination) return false;
+    if (typeof x !== "string") return false;
+    if (ADMINS.indexOf(x.toLowerCase()) !== -1) return true;
+    if (!readNomination) return false;
     try {
       const s = await readNomination(x.toLowerCase());
       return s.exists() && s.data().nominated !== false;
