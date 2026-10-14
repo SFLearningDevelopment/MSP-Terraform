@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026092902 -->
+<!-- build: 2026101401 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -129,7 +129,7 @@ footer{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;
 <body>
 <header class="masthead">
   <div class="wrap">
-    <p class="crumb"><span id="who" class="who"></span><a class="back" href="index.html?v=2026092902">&#8592; Dashboard</a> &middot; SF Knowledge Hub &middot; Terraform: Basic to Intermediate</p>
+    <p class="crumb"><span id="who" class="who"></span><a class="back" href="index.html?v=2026101401">&#8592; Dashboard</a> &middot; SF Knowledge Hub &middot; Terraform: Basic to Intermediate</p>
     <p><span class="chip">Course 1 certification</span></p>
     <h1>Certification: exam and graded lab</h1>
     <p class="deck">Pass the exam and submit the graded lab. You can do the two parts in either order.</p>
@@ -152,7 +152,7 @@ footer{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;
 <div class="orient" id="locked" hidden>
   <h2>Finish all seven modules first</h2>
   <p>The certification opens when every module is marked complete. You have <span id="lockcount">0</span> of 7 done.</p>
-  <p><a class="pbtn" href="index.html?v=2026092902">Back to the dashboard</a></p>
+  <p><a class="pbtn" href="index.html?v=2026101401">Back to the dashboard</a></p>
 </div>
 
 <div id="content" hidden>
@@ -223,13 +223,13 @@ terraform destroy               # always clean up</pre>
 </div>
 
 <div class="pager">
-  <a class="pbtn ghost" href="index.html?v=2026092902">&#8592; Dashboard</a>
+  <a class="pbtn ghost" href="index.html?v=2026101401">&#8592; Dashboard</a>
   <span></span>
 </div>
 
 <footer>
   <div>SF Knowledge Hub &middot; Terraform: Basic to Intermediate &middot; Certification</div>
-  <div>build 2026092902</div>
+  <div>build 2026101401</div>
 </footer>
 
 </div>
@@ -246,7 +246,7 @@ terraform destroy               # always clean up</pre>
   .score{font-family:var(--sans);font-size:26px;font-weight:660;margin:0 0 6px}
   .score.pass{color:var(--ok)} .score.fail{color:var(--caution)}
 </style>
-<script src="tf1-question-bank.js?v=2026092902"></script>
+<script src="tf1-question-bank.js?v=2026101401"></script>
 
 <!-- SF auth gate: Google SSO or email/password sign-in. -->
 <script>
@@ -557,11 +557,14 @@ terraform destroy               # always clean up</pre>
   /* Graded lab: the pasted plan and apply output, stored on the course object. */
   function submitLab(plan, apply){
     var t = stamp();
-    var lab = { planOutput: plan, applyOutput: apply, submittedOn: t.date, submittedAt: t.time };
-    var o = lsRead(); o.lab = { submittedOn: t.date, submittedAt: t.time }; lsWrite(o);
+    var iso = new Date().toISOString();
+    var lab = { planOutput: plan, applyOutput: apply, submittedOn: t.date, submittedAt: t.time, submittedIso: iso };
+    var o = lsRead();
+    var prevReview = (o.lab && o.lab.review) || (courseObj.lab && courseObj.lab.review) || null;
+    o.lab = { submittedOn: t.date, submittedAt: t.time, submittedIso: iso, review: prevReview }; lsWrite(o);
     if (!ready) return Promise.reject(new Error("offline"));
     var update = base(); update.courses[CP_COURSE_ID] = { lab: lab };
-    courseObj.lab = lab;
+    courseObj.lab = Object.assign({}, courseObj.lab || {}, lab);
     return fs.setDoc(cpRef, update, { merge: true });
   }
 
@@ -640,7 +643,8 @@ terraform destroy               # always clean up</pre>
       var o = lsRead();
       o.modules = Object.assign({}, local.modules || {}, courseObj.modules || {});
       if (courseObj.lab) {
-        o.lab = { submittedOn: courseObj.lab.submittedOn, submittedAt: courseObj.lab.submittedAt };
+        o.lab = { submittedOn: courseObj.lab.submittedOn, submittedAt: courseObj.lab.submittedAt,
+                  submittedIso: courseObj.lab.submittedIso || null, review: courseObj.lab.review || null };
       }
       if (examObj) {
         var le = o.exam || {};
@@ -784,10 +788,18 @@ terraform destroy               # always clean up</pre>
     if (run) { btn.textContent = 'Resume the exam'; btn.disabled = false; }
     else { btn.textContent = 'Start attempt ' + (ei.used + 1); btn.disabled = !canStart; if (!canStart) btn.textContent = 'Exam closed'; }
 
-    /* Lab status */
-    var lt;
+    /* Lab status, including the admin's review once there is one */
+    var lt, review = labDone ? (lab.review || null) : null;
+    var submittedMs = labDone ? (lab.submittedIso ? Date.parse(lab.submittedIso)
+                                 : Date.parse(lab.submittedOn + 'T' + (lab.submittedAt || '00:00:00'))) : 0;
+    var reviewCurrent = !!(review && review.status && submittedMs <= Date.parse(review.reviewedAt || 0));
+    var when = 'on ' + (lab.submittedOn || '') + (lab.submittedAt ? ' at ' + lab.submittedAt : '');
+    var comment = review && review.comment ? ' Reviewer\u2019s comment: ' + review.comment : '';
     if (!labDone) lt = 'Not submitted.';
-    else lt = 'Submitted on ' + (lab.submittedOn || '') + (lab.submittedAt ? ' at ' + lab.submittedAt : '') + '. You can submit again to replace it.';
+    else if (reviewCurrent && review.status === 'approved') lt = 'Approved by the reviewer.' + comment;
+    else if (reviewCurrent) lt = 'Your lab needs changes.' + comment + ' Fix the issues and submit again.';
+    else if (review && review.status) lt = 'Submitted again ' + when + '. Waiting for a new review.';
+    else lt = 'Submitted ' + when + '. Waiting for review. You can submit again to replace it.';
     $('labstatustext').textContent = lt;
     if (labDone) $('labsubmit').textContent = 'Submit again';
   }
