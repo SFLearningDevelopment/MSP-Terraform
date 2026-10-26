@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026101401 -->
+<!-- build: 2026102601 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -129,7 +129,7 @@ footer{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;
 <body>
 <header class="masthead">
   <div class="wrap">
-    <p class="crumb"><span id="who" class="who"></span><a class="back" href="index.html?v=2026101401">&#8592; Dashboard</a> &middot; SF Knowledge Hub &middot; Terraform: Basic to Intermediate</p>
+    <p class="crumb"><span id="who" class="who"></span><a class="back" href="index.html?v=2026102601">&#8592; Dashboard</a> &middot; SF Knowledge Hub &middot; Terraform: Basic to Intermediate</p>
     <p><span class="chip">Course 1 certification</span></p>
     <h1>Certification: exam and graded lab</h1>
     <p class="deck">Pass the exam and submit the graded lab. You can do the two parts in either order.</p>
@@ -152,7 +152,7 @@ footer{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;
 <div class="orient" id="locked" hidden>
   <h2>Finish all seven modules first</h2>
   <p>The certification opens when every module is marked complete. You have <span id="lockcount">0</span> of 7 done.</p>
-  <p><a class="pbtn" href="index.html?v=2026101401">Back to the dashboard</a></p>
+  <p><a class="pbtn" href="index.html?v=2026102601">Back to the dashboard</a></p>
 </div>
 
 <div id="content" hidden>
@@ -223,13 +223,13 @@ terraform destroy               # always clean up</pre>
 </div>
 
 <div class="pager">
-  <a class="pbtn ghost" href="index.html?v=2026101401">&#8592; Dashboard</a>
+  <a class="pbtn ghost" href="index.html?v=2026102601">&#8592; Dashboard</a>
   <span></span>
 </div>
 
 <footer>
   <div>SF Knowledge Hub &middot; Terraform: Basic to Intermediate &middot; Certification</div>
-  <div>build 2026101401</div>
+  <div>build 2026102601</div>
 </footer>
 
 </div>
@@ -793,7 +793,7 @@ terraform destroy               # always clean up</pre>
     var submittedMs = labDone ? (lab.submittedIso ? Date.parse(lab.submittedIso)
                                  : Date.parse(lab.submittedOn + 'T' + (lab.submittedAt || '00:00:00'))) : 0;
     var reviewCurrent = !!(review && review.status && submittedMs <= Date.parse(review.reviewedAt || 0));
-    var when = 'on ' + (lab.submittedOn || '') + (lab.submittedAt ? ' at ' + lab.submittedAt : '');
+    var when = labDone ? 'on ' + (lab.submittedOn || '') + (lab.submittedAt ? ' at ' + lab.submittedAt : '') : '';
     var comment = review && review.comment ? ' Reviewer\u2019s comment: ' + review.comment : '';
     if (!labDone) lt = 'Not submitted.';
     else if (reviewCurrent && review.status === 'approved') lt = 'Approved by the reviewer.' + comment;
