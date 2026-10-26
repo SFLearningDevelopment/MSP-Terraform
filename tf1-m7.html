@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- build: 2026092902 -->
+<!-- build: 2026102601 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Module 7 &mdash; State Basics | Terraform: Basic to Intermediate</title>
+<title>Terraform: Basic to Intermediate | SF Knowledge Hub</title>
 <style>
 :root{
   --ink:#1B2124; --ink-2:#495259; --rule:#DFE3DE; --paper:#F6F7F5; --panel:#FFFFFF;
@@ -129,11 +129,16 @@ footer{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;
 <body>
 <header class="masthead">
   <div class="wrap">
-    <p class="crumb"><span id="who" class="who"></span><a class="back" href="index.html?v=2026092902">&#8592; Dashboard</a> &middot; SF Knowledge Hub &middot; Terraform: Basic to Intermediate</p>
-    <p><span class="chip">Module 7 of 7</span></p>
-    <h1>State Basics</h1>
-    <p class="deck">What the state file is for, what the local backend does, and how to read state safely.</p>
-    <div class="facts"><div><b>Time</b>About 2 hours</div><div><b>Sections</b>4, each with a finish box</div><div><b>Exam objectives</b>2d, 6a</div><div><b>Completion</b>All sections, check questions, then the box at the end</div></div>
+    <p class="crumb"><span id="who" class="who"></span>SF Knowledge Hub &middot; Terraform Associate (004) preparation</p>
+    <p><span class="chip">Course 1 of 2 &middot; Self-paced</span></p>
+    <h1>Terraform: Basic to Intermediate</h1>
+    <p class="deck">Write, run and look after Terraform configurations on AWS: providers, the main workflow, resources and data sources, variables, expressions and state. This course covers exam objectives 1, 2, 3, 4a to 4e and 6a.</p>
+    <div class="facts">
+      <div><b>Format</b>Online, self-paced, practical AWS labs</div>
+      <div><b>Effort</b>About 20 hours</div>
+      <div><b>Finish by</b>8 November 2026</div>
+      <div><b>To complete</b>7 modules, the exam (70%) and the graded lab</div>
+    </div>
   </div>
 </header>
 
@@ -144,191 +149,76 @@ footer{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;
 
 <div class="wrap">
 
-<div class="orient">
-<h2>Before you begin</h2>
-<p>Every lab so far created a file called <code>terraform.tfstate</code>. This module explains what is in it and why Terraform cannot work without it. Remote state, locking and moving state are covered in Course 2.</p>
-</div>
-
-<section class="stage" id="sec-1">
-  <div class="stage-head"><div class="num" id="num-1">1</div><h2>Why Terraform needs state</h2></div>
-  <p class="goal">The link between your files and the real world.</p>
+<section class="stage">
+  <div class="stage-head"><div class="num">&#10003;</div><h2>Your status</h2></div>
+  <p class="goal">Updated each time you open this page.</p>
   <div class="stage-body">
-
-<p>Your <code>.tf</code> files say what should exist. AWS holds what does exist. <b>State</b> is Terraform's record that connects the two: for each resource address in your configuration, which real object it manages.</p>
-<table>
-<tr><th>Purpose</th><th>What it means</th></tr>
-<tr><td>Mapping to the real world</td><td><code>aws_instance.web</code> in your files is instance <code>i-0abc123...</code> in AWS. Without this record Terraform would not know which instance is "web".</td></tr>
-<tr><td>Metadata</td><td>Dependencies between resources, so Terraform can destroy in the right order even after you delete a block from your files.</td></tr>
-<tr><td>Performance</td><td>Terraform can use cached attribute values instead of asking the platform about every resource on every run. Large configurations can use <code>-refresh=false</code> to rely on the cache.</td></tr>
-<tr><td>Syncing</td><td>When state is shared (remote backends, Course 2), a whole team works from one record.</td></tr>
-</table>
-<p>Before every plan, Terraform <b>refreshes</b> the state: it reads the current settings of each resource from AWS and compares them with the state and your files. A difference caused by someone changing a resource manually is called <b>drift</b>.</p>
-<div class="callout lens"><span class="tag">Exam tip</span><p>Terraform does not look at every resource in your AWS account. It only manages resources recorded in its state. A resource created manually is invisible to Terraform until it is imported (Course 2).</p></div>
-    <label class="secdone" id="sd-1"><input type="checkbox" class="sec" data-sec="1" disabled> I have finished this section</label>
-  </div>
-</section>
-<section class="stage" id="sec-2">
-  <div class="stage-head"><div class="num" id="num-2">2</div><h2>The local backend</h2></div>
-  <p class="goal">Where state lives by default.</p>
-  <div class="stage-body">
-
-<p>A <b>backend</b> decides where state is stored. If you do not configure one, Terraform uses the <b>local backend</b>: state is saved as <code>terraform.tfstate</code> in the working folder, and the previous version as <code>terraform.tfstate.backup</code>.</p>
-<p class="fname">Choosing the local backend explicitly (not required)</p><pre class="code">terraform {
-  backend &quot;local&quot; {
-    path = &quot;state/dev.tfstate&quot;      # optional: a different file path
-  }
-}</pre>
-<ul>
-<li>The local backend <b>locks</b> the state file on your own machine while a command runs, so two commands in two terminals cannot write it at the same time. It cannot protect against a teammate running Terraform on their own copy.</li>
-<li>Because the file lives on one computer, the local backend suits individual learning and testing, not teams. Teams use a remote backend such as S3 or HCP Terraform (Course 2).</li>
-<li>Changing the <code>backend</code> block requires running <code>terraform init</code> again.</li>
-</ul>
-
-    <label class="secdone" id="sd-2"><input type="checkbox" class="sec" data-sec="2" disabled> I have finished this section</label>
-  </div>
-</section>
-<section class="stage" id="sec-3">
-  <div class="stage-head"><div class="num" id="num-3">3</div><h2>Reading state safely</h2></div>
-  <p class="goal">What is inside, what not to do with it, and the commands to inspect it.</p>
-  <div class="stage-body">
-
-<p>The state file is JSON. Part of one looks like this:</p>
-<p class="fname">terraform.tfstate (extract)</p><pre class="code">{
-  &quot;version&quot;: 4,
-  &quot;terraform_version&quot;: &quot;1.12.2&quot;,
-  &quot;serial&quot;: 7,
-  &quot;lineage&quot;: &quot;3f1c...&quot;,
-  &quot;resources&quot;: [
-    {
-      &quot;mode&quot;: &quot;managed&quot;,
-      &quot;type&quot;: &quot;aws_instance&quot;,
-      &quot;name&quot;: &quot;web&quot;,
-      &quot;provider&quot;: &quot;provider[\&quot;registry.terraform.io/hashicorp/aws\&quot;]&quot;,
-      &quot;instances&quot;: [
-        { &quot;attributes&quot;: { &quot;id&quot;: &quot;i-0abc123def4567890&quot;, &quot;instance_type&quot;: &quot;t3.micro&quot; } }
-      ]
-    }
-  ]
-}</pre>
-<p><code>"mode": "managed"</code> is a resource; <code>"mode": "data"</code> is a data source. <code>serial</code> goes up by one every time the state is written.</p>
-<h3>Rules for state</h3>
-<ul>
-<li><b>Do not edit it manually.</b> Use Terraform commands to change state.</li>
-<li><b>Do not commit it to Git.</b> Add <code>*.tfstate</code> and <code>*.tfstate.*</code> to <code>.gitignore</code>.</li>
-<li><b>Treat it as secret.</b> State holds every attribute in plain text, including values marked <code>sensitive</code>, such as database passwords.</li>
-<li><b>Do not delete it.</b> Without state, Terraform no longer knows it manages those resources; the next apply tries to create them again.</li>
-</ul>
-<h3>Commands to read state</h3>
-<pre class="code term">terraform show                         # everything in state, readable form
-terraform state list                   # just the resource addresses
-terraform state show aws_instance.web  # all attributes of one resource
-terraform output                       # the outputs stored in state</pre><div class="callout caution"><span class="tag">Watch out</span><p>Marking a variable or output <code>sensitive</code> hides it from the screen, not from the state file. Protect the state file wherever it is stored.</p></div>
-    <label class="secdone" id="sd-3"><input type="checkbox" class="sec" data-sec="3" disabled> I have finished this section</label>
-  </div>
-</section>
-<section class="stage" id="sec-4">
-  <div class="stage-head"><div class="num" id="num-4">4</div><h2>Lab: look inside state</h2></div>
-  <p class="goal">Create a small configuration, inspect its state, and see drift.</p>
-  <div class="stage-body">
-
-<p>Create a folder <code>tf-lab-m7</code>.</p>
-<p class="fname">tf-lab-m7/main.tf</p><pre class="code">terraform {
-  required_version = &quot;&gt;= 1.12.0&quot;
-  required_providers {
-    aws    = { source = &quot;hashicorp/aws&quot;, version = &quot;~&gt; 6.0&quot; }
-    random = { source = &quot;hashicorp/random&quot;, version = &quot;~&gt; 3.6&quot; }
-  }
-}
-
-provider &quot;aws&quot; {
-  region = &quot;us-east-1&quot;
-  default_tags { tags = { Project = &quot;tf-course-1&quot;, Lab = &quot;m7&quot; } }
-}
-
-resource &quot;random_password&quot; &quot;db&quot; {
-  length  = 20
-  special = false
-}
-
-resource &quot;random_pet&quot; &quot;name&quot; {}
-
-resource &quot;aws_s3_bucket&quot; &quot;demo&quot; {
-  bucket        = &quot;tf-course-m7-${random_pet.name.id}&quot;
-  force_destroy = true
-  tags          = { Purpose = &quot;state-lab&quot; }
-}
-
-data &quot;aws_caller_identity&quot; &quot;me&quot; {}
-
-output &quot;account_id&quot; {
-  value = data.aws_caller_identity.me.account_id
-}
-
-output &quot;db_password&quot; {
-  value     = random_password.db.result
-  sensitive = true
-}</pre><p class="fname">tf-lab-m7/.gitignore</p><pre class="code">*.tfstate
-*.tfstate.*
-.terraform/</pre><pre class="code term">cd tf-lab-m7
-terraform init
-terraform apply
-terraform output                       # db_password = &lt;sensitive&gt;
-terraform state list                   # 3 resources and 1 data source
-terraform state show aws_s3_bucket.demo
-grep -A2 &#x27;&quot;result&quot;&#x27; terraform.tfstate  # the password is in plain text in the file</pre>
-<h3>See drift</h3>
-<p>In the AWS console, open the bucket, go to <b>Properties</b>, and change the <code>Purpose</code> tag to <code>changed-by-hand</code>. Then run:</p>
-<pre class="code term">terraform plan
-<span class="c"># ~ update in-place: tags &quot;Purpose&quot; = &quot;changed-by-hand&quot; -&gt; &quot;state-lab&quot;</span>
-terraform apply                        # puts the tag back
-terraform destroy
-ls                                     # terraform.tfstate is still here, now with no resources</pre><div class="callout verify"><span class="tag">Check your work</span><ul><li><code>terraform state list</code> shows <code>data.aws_caller_identity.me</code>, <code>aws_s3_bucket.demo</code>, <code>random_password.db</code> and <code>random_pet.name</code></li><li>You found the password in <code>terraform.tfstate</code> even though the output hid it</li><li>The plan after your console change showed the tag being set back</li></ul></div>
-    <label class="secdone" id="sd-4"><input type="checkbox" class="sec" data-sec="4" disabled> I have finished this section</label>
-  </div>
-</section>
-
-<section class="stage check">
-  <div class="stage-head"><div class="num">?</div><h2>Check your understanding</h2></div>
-  <p class="goal">Answer both questions correctly to unlock the completion box. You can try as many times as you need.</p>
-  <div class="stage-body">
-    <div class="gq" data-i="0">
-      <p class="gstem">A variable is marked sensitive = true. Where can its value still be found in plain text?</p>
-      <label class="gopt"><input type="radio" name="g0" value="0"> <span>Nowhere, because Terraform encrypts it</span></label>
-      <label class="gopt"><input type="radio" name="g0" value="1"> <span>In the terraform.tfstate file</span></label>
-      <label class="gopt"><input type="radio" name="g0" value="2"> <span>In the .terraform.lock.hcl file</span></label>
-      <label class="gopt"><input type="radio" name="g0" value="3"> <span>Only in the plan output on screen</span></label>
-      <div class="gfb" id="gfb-0"></div>
+    <div class="stat">
+      <div><span class="k">Modules</span><span class="val" id="st-mod">&ndash;</span></div>
+      <div><span class="k">Certification exam</span><span class="val" id="st-exam">&ndash;</span></div>
+      <div><span class="k">Graded lab</span><span class="val" id="st-lab">&ndash;</span></div>
     </div>
-    <div class="gq" data-i="1">
-      <p class="gstem">You did not configure any backend. Where does Terraform store state?</p>
-      <label class="gopt"><input type="radio" name="g1" value="0"> <span>In an S3 bucket that Terraform creates for you</span></label>
-      <label class="gopt"><input type="radio" name="g1" value="1"> <span>In HCP Terraform, in a free default account</span></label>
-      <label class="gopt"><input type="radio" name="g1" value="2"> <span>In terraform.tfstate in the working folder</span></label>
-      <label class="gopt"><input type="radio" name="g1" value="3"> <span>In memory, only while a command is running</span></label>
-      <div class="gfb" id="gfb-1"></div>
-    </div>
-    <div class="gactions"><button class="pbtn" id="gcheck">Check answers</button><span class="gstate" id="gstate"></span></div>
-    <p class="recap"><b>Module recap.</b> State maps your configuration to real objects, records dependencies and caches attributes. By default it lives in a local terraform.tfstate file. Never edit, commit or delete it, and protect it because it holds sensitive values in plain text.</p>
   </div>
 </section>
 
-<div class="done">
-  <span class="tag">Completion</span>
-  <label id="lbl"><input type="checkbox" id="cmplt" disabled> I have finished Module 7: State Basics.</label>
-  <p class="sync" id="sync"></p>
-</div>
+<section class="stage">
+  <div class="stage-head"><div class="num">&#9776;</div><h2>Modules</h2></div>
+  <p class="goal">Work through them in order. The certification opens when all seven modules are complete.</p>
+  <div class="stage-body">
+    <div class="mlist">
+<div class="mrow" id="row-tf1-m1"><a class="mlink" href="tf1-m1.html?v=2026092902"><span class="mnum">1</span><span class="mtitle">Infrastructure as Code and Terraform</span><span class="msec" data-key="tf1-m1">0/4</span><span class="mmins">2 h</span><span class="mstate" data-key="tf1-m1">&mdash;</span></a><button class="redo" type="button" data-key="tf1-m1" hidden>Redo</button></div>
+<div class="mrow" id="row-tf1-m2"><a class="mlink" href="tf1-m2.html?v=2026092902"><span class="mnum">2</span><span class="mtitle">Providers</span><span class="msec" data-key="tf1-m2">0/4</span><span class="mmins">3 h</span><span class="mstate" data-key="tf1-m2">&mdash;</span></a><button class="redo" type="button" data-key="tf1-m2" hidden>Redo</button></div>
+<div class="mrow" id="row-tf1-m3"><a class="mlink" href="tf1-m3.html?v=2026092902"><span class="mnum">3</span><span class="mtitle">The Terraform Workflow</span><span class="msec" data-key="tf1-m3">0/4</span><span class="mmins">3 h</span><span class="mstate" data-key="tf1-m3">&mdash;</span></a><button class="redo" type="button" data-key="tf1-m3" hidden>Redo</button></div>
+<div class="mrow" id="row-tf1-m4"><a class="mlink" href="tf1-m4.html?v=2026092902"><span class="mnum">4</span><span class="mtitle">Resources and Data Sources</span><span class="msec" data-key="tf1-m4">0/4</span><span class="mmins">3 h</span><span class="mstate" data-key="tf1-m4">&mdash;</span></a><button class="redo" type="button" data-key="tf1-m4" hidden>Redo</button></div>
+<div class="mrow" id="row-tf1-m5"><a class="mlink" href="tf1-m5.html?v=2026092902"><span class="mnum">5</span><span class="mtitle">Variables and Outputs</span><span class="msec" data-key="tf1-m5">0/4</span><span class="mmins">3 h</span><span class="mstate" data-key="tf1-m5">&mdash;</span></a><button class="redo" type="button" data-key="tf1-m5" hidden>Redo</button></div>
+<div class="mrow" id="row-tf1-m6"><a class="mlink" href="tf1-m6.html?v=2026092902"><span class="mnum">6</span><span class="mtitle">Expressions and Functions</span><span class="msec" data-key="tf1-m6">0/4</span><span class="mmins">4 h</span><span class="mstate" data-key="tf1-m6">&mdash;</span></a><button class="redo" type="button" data-key="tf1-m6" hidden>Redo</button></div>
+<div class="mrow" id="row-tf1-m7"><a class="mlink" href="tf1-m7.html?v=2026102601"><span class="mnum">7</span><span class="mtitle">State Basics</span><span class="msec" data-key="tf1-m7">0/4</span><span class="mmins">2 h</span><span class="mstate" data-key="tf1-m7">&mdash;</span></a><button class="redo" type="button" data-key="tf1-m7" hidden>Redo</button></div>
+<div class="mrow cert" id="row-cert"><a class="mlink" id="certlink" href="tf1-exam.html?v=2026102601"><span class="mnum">&#9733;</span><span class="mtitle">Course 1 certification: exam and graded lab</span><span class="msec"></span><span class="mmins">3 h</span><span class="mstate" id="certstate">Locked</span></a><span class="redo-space"></span></div>
+    </div>
+    <div class="pager"><span></span><a class="pbtn" id="resume" href="tf1-m1.html?v=2026092902">Start module 1 &#8594;</a></div>
+  </div>
+</section>
 
-<div class="pager">
-  <a class="pbtn ghost" href="tf1-m6.html?v=2026092902">&#8592; Module 6</a>
-  <a class="pbtn off" id="nextbtn" href="tf1-exam.html?v=2026092902">Certification &#8594;</a>
-</div>
+<div class="callout verify"><span class="tag">Keeping your progress</span>
+  <p>Progress is saved in this browser as soon as you tick a box, and to your SourceFuse record straight after. You can continue on another computer by signing in with the same account.</p></div>
+
+<div class="callout lens"><span class="tag">What you need</span>
+  <p>An AWS account you are allowed to create resources in, Terraform 1.12, and the AWS CLI. Module 1 walks you through the setup. Every lab ends with <code>terraform destroy</code>, so costs stay close to zero.</p></div>
 
 <footer>
-  <div>SF Knowledge Hub &middot; Terraform: Basic to Intermediate &middot; Module 7 of 7</div>
-  <div>build 2026092902</div>
+  <div>SF Knowledge Hub &middot; Terraform: Basic to Intermediate</div>
+  <div>build 2026102601</div>
 </footer>
 
 </div>
+<style>
+  .stat{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .stat > div{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:12px 14px}
+  .stat .k{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-2)}
+  .stat .val{display:block;font-family:var(--sans);font-size:15px;font-weight:620;margin-top:3px}
+  .val.ok{color:var(--ok)} .val.wait{color:var(--lens)} .val.bad{color:var(--caution)}
+  .mlist{border-top:1px solid var(--rule)}
+  .mrow{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--rule)}
+  .mlink{display:flex;align-items:center;gap:14px;padding:13px 4px;flex:1;min-width:0;
+    text-decoration:none;color:var(--ink);font-family:var(--sans);font-size:15px}
+  .mrow:hover{background:var(--level-soft)}
+  .mrow.cert .mtitle{font-weight:620}
+  .mrow.cert.locked .mlink{color:#8D979C;pointer-events:none}
+  .redo,.redo-space{flex:none;margin-right:4px;width:56px}
+  .redo{background:none;border:1px solid var(--rule);border-radius:6px;
+    color:var(--ink-2);font-family:var(--sans);font-size:12px;padding:5px 0;cursor:pointer}
+  .redo:hover{border-color:var(--caution);color:var(--caution)}
+  .redo:disabled{opacity:.5;cursor:default}
+  .redo[hidden]{visibility:hidden;display:block}
+  .mnum{font-family:var(--mono);font-size:13px;color:var(--ink-2);width:22px;flex:none}
+  .mtitle{flex:1}
+  .msec{color:var(--ink-2);font-size:12.5px;width:40px;text-align:right;flex:none}
+  .mmins{color:var(--ink-2);font-size:13px;white-space:nowrap;width:40px;flex:none}
+  .mstate{font-size:12.5px;color:var(--ink-2);width:96px;text-align:right;white-space:nowrap;flex:none}
+  .mstate.ok{color:var(--ok);font-weight:620}
+  .mstate.prog{color:var(--lens);font-weight:600}
+  @media (max-width:620px){ .stat{grid-template-columns:1fr} .mmins,.msec{display:none} .mstate{width:76px} }
+</style>
 
 <!-- SF auth gate: Google SSO or email/password sign-in. -->
 <script>
@@ -819,123 +709,103 @@ ls                                     # terraform.tfstate is still here, now wi
 
 <script type="module">
 (function(){
-  var MK = "tf1-m7";
-  var NSEC = 4;
-  var GATE = [{"answer": 1, "why": "sensitive hides a value from command output. The state file still stores it in plain text, so the state file must be protected."}, {"answer": 2, "why": "With no backend block, Terraform uses the local backend and writes terraform.tfstate in the working folder."}];
   var P = window.SFProgress;
-  var KEYS = P.moduleKeys;
+  var KEYS = P.moduleKeys, TOT = P.sectionTotals;
+  var EXAM_HREF = "tf1-exam.html?v=2026102601";
+  var MOD_HREF = { "tf1-m1": "tf1-m1.html?v=2026092902", "tf1-m2": "tf1-m2.html?v=2026092902", "tf1-m3": "tf1-m3.html?v=2026092902", "tf1-m4": "tf1-m4.html?v=2026092902", "tf1-m5": "tf1-m5.html?v=2026092902", "tf1-m6": "tf1-m6.html?v=2026092902", "tf1-m7": "tf1-m7.html?v=2026102601" };
 
   function gateRead(uid){ try { return JSON.parse(localStorage.getItem(P.gateKey + uid) || "{}"); } catch(_) { return {}; } }
-  function gateWrite(uid, o){ try { localStorage.setItem(P.gateKey + uid, JSON.stringify(o)); } catch(_) {} }
+  function setVal(id, text, cls){
+    var el = document.getElementById(id); el.textContent = text;
+    el.classList.remove('ok','wait','bad'); if (cls) el.classList.add(cls);
+  }
 
   window.SFAuth.mount(async function(user, signOut){
     document.getElementById('who').innerHTML =
-      (user.email || '') + ' <button class="signout" id="signout">Sign out</button>';
+      'Welcome, ' + (user.displayName || user.email || '') + ' <button class="signout" id="signout">Sign out</button>';
     var so = document.getElementById('signout');
     if (so && signOut) so.onclick = function(){ signOut().then(function(){ location.reload(); }); };
 
-    var box = document.getElementById('cmplt'), lbl = document.getElementById('lbl'),
-        sync = document.getElementById('sync'), nextbtn = document.getElementById('nextbtn'),
-        gcheck = document.getElementById('gcheck'), gstate = document.getElementById('gstate');
-    var gatePassed = false;
+    function paint(state, online){
+      var done = KEYS.filter(function(k){ return P.isDone(state, k); }).length;
+      document.getElementById('fill').style.width = (done / KEYS.length) * 100 + '%';
+      document.getElementById('count').textContent = done + ' of ' + KEYS.length + ' modules complete'
+        + (done === KEYS.length ? ' \u00b7 certification open' : '');
+      var gates = gateRead(user.uid);
 
-    function showGateSatisfied(){
-      gatePassed = true;
-      GATE.forEach(function(gq, i){
-        var rs = document.querySelectorAll('input[name="g' + i + '"]');
-        if (rs[gq.answer]) rs[gq.answer].checked = true;
-        var fb = document.getElementById('gfb-' + i);
-        if (fb) fb.innerHTML = '<div class="callout good"><span class="tag">Correct</span><p>' + gq.why + '</p></div>';
+      KEYS.forEach(function(k){
+        var el = document.querySelector('.mstate[data-key="' + k + '"]');
+        var sc = document.querySelector('.msec[data-key="' + k + '"]');
+        var rb = document.querySelector('.redo[data-key="' + k + '"]');
+        var n = Math.min(P.sectionsDone(state, k), TOT[k]);
+        var isOk = P.isDone(state, k);
+        sc.textContent = (isOk ? TOT[k] : n) + '/' + TOT[k];
+        el.classList.remove('ok','prog');
+        if (isOk) { el.textContent = 'Complete'; el.classList.add('ok'); }
+        else if (n > 0 || gates[k]) { el.textContent = 'In progress'; el.classList.add('prog'); }
+        else el.textContent = 'Not started';
+        if (rb) rb.hidden = !(isOk || n > 0);
       });
-      document.querySelectorAll('.gq input[type=radio]').forEach(function(r){ r.disabled = true; });
-      if (gcheck) gcheck.style.display = 'none';
-      gstate.textContent = 'Check questions passed';
+      setVal('st-mod', done + ' of ' + KEYS.length + ' complete', done === KEYS.length ? 'ok' : null);
+
+      /* Certification row */
+      var allDone = done === KEYS.length;
+      var row = document.getElementById('row-cert');
+      row.classList.toggle('locked', !allDone);
+      var ex = state.exam || null, lab = state.lab || null;
+      var examPassed = !!(ex && ex.passed);
+      var labDone = !!(lab && lab.submittedOn);
+      var cs = document.getElementById('certstate');
+      cs.classList.remove('ok','prog');
+
+      if (!ex || !ex.attempts) setVal('st-exam', allDone ? 'Not taken' : 'Locked', null);
+      else if (examPassed) setVal('st-exam', 'Passed (' + ex.score + '%)', 'ok');
+      else if (ex.attempts >= 2) setVal('st-exam', 'Not passed \u00b7 no attempts left', 'bad');
+      else setVal('st-exam', 'Not passed \u00b7 1 attempt left', 'wait');
+
+      if (!labDone) setVal('st-lab', allDone ? 'Not submitted' : 'Locked', null);
+      else setVal('st-lab', 'Submitted on ' + lab.submittedOn, 'ok');
+
+      cs.textContent = allDone ? ((ex && ex.attempts) || labDone ? 'In progress' : 'Open') : 'Locked';
+      if (allDone && ((ex && ex.attempts) || labDone)) cs.classList.add('prog');
+
+      /* Resume button */
+      var next = null;
+      for (var i = 0; i < KEYS.length; i++) { if (!P.isDone(state, KEYS[i])) { next = KEYS[i]; break; } }
+      var btn = document.getElementById('resume');
+      if (!next) { btn.innerHTML = 'Go to the certification \u2192'; btn.href = EXAM_HREF; }
+      else {
+        var idx = KEYS.indexOf(next) + 1;
+        var started = done > 0 || P.sectionsDone(state, next) > 0;
+        btn.innerHTML = (started ? 'Resume at module ' : 'Start module ') + idx + ' \u2192';
+        btn.href = MOD_HREF[next];
+      }
     }
 
-    gcheck.addEventListener('click', function(){
-      var allRight = true, unanswered = 0;
-      GATE.forEach(function(gq, i){
-        var sel = document.querySelector('input[name="g' + i + '"]:checked');
-        var fb  = document.getElementById('gfb-' + i);
-        if (!sel) { unanswered++; allRight = false; fb.innerHTML = ''; return; }
-        var ok = parseInt(sel.value, 10) === gq.answer;
-        if (!ok) allRight = false;
-        fb.innerHTML = ok
-          ? '<div class="callout good"><span class="tag">Correct</span><p>' + gq.why + '</p></div>'
-          : '<div class="callout caution"><span class="tag">Not quite</span><p>Look at the module again and try once more.</p></div>';
-      });
-      if (unanswered) { gstate.textContent = 'Answer every question first.'; return; }
-      if (!allRight) { gstate.textContent = 'Try again.'; return; }
-      var gs = gateRead(user.uid); gs[MK] = true; gateWrite(user.uid, gs);
-      showGateSatisfied();
-      paint(P.read());
-    });
-
-    document.querySelectorAll('input.sec').forEach(function(cb){
-      cb.addEventListener('change', function(){
-        if (!cb.checked) return;
-        var n = parseInt(cb.getAttribute('data-sec'), 10);
-        var pr = P.tickSection(MK, n);
-        paint(P.read());
-        pr.catch(function(e){
-          console.error('[progress] section sync failed', e);
-          sync.textContent = 'Saved on this device. It will sync to your SF record next time you open this page online.';
+    document.querySelectorAll('.redo').forEach(function(btn){
+      btn.addEventListener('click', function(ev){
+        ev.preventDefault();
+        var mk = btn.getAttribute('data-key');
+        var row = document.querySelector('#row-' + mk + ' .mtitle');
+        var name = row ? row.textContent : mk;
+        if (!confirm('Redo "' + name + '"?\n\nThis clears your completion, your section ticks and your answers to that '
+                   + 'module\u2019s check questions, on this device and in your SF record. Exam results and your lab are kept.')) return;
+        btn.disabled = true;
+        var prev = btn.textContent;
+        btn.textContent = '\u2026';
+        paint(P.clearLocalModule(mk), false);
+        P.redo(mk).then(function(){
+          btn.disabled = false; btn.textContent = prev;
+          paint(P.read(), true);
+        }).catch(function(e){
+          console.error('[redo] Firestore reset failed', e);
+          btn.disabled = false; btn.textContent = prev;
+          alert('Cleared on this device, but the reset did not reach your SF record. Reopen the dashboard while online and try again.');
         });
       });
     });
 
-    function paint(state){
-      var ticks = (state.sections || {})[MK] || [];
-      for (var i = 1; i <= NSEC; i++) {
-        var cb = document.querySelector('input.sec[data-sec="' + i + '"]');
-        var on = ticks.indexOf(i) !== -1;
-        cb.checked = on; cb.disabled = on;
-        document.getElementById('sd-' + i).classList.toggle('ticked', on);
-        document.getElementById('num-' + i).classList.toggle('ok', on);
-      }
-      var nDone = KEYS.filter(function(k){ return P.isDone(state, k); }).length;
-      var secCount = Math.min(ticks.length, NSEC);
-      document.getElementById('fill').style.width = (secCount / NSEC) * 100 + '%';
-      document.getElementById('count').textContent = 'This module: ' + secCount + ' of ' + NSEC
-        + ' sections \u00b7 Course: ' + nDone + ' of ' + KEYS.length + ' modules complete';
-
-      var done = P.isDone(state, MK);
-      if (!gatePassed && (done || gateRead(user.uid)[MK])) showGateSatisfied();
-      if (done) {
-        var m = (state.modules || {})[MK] || {};
-        box.checked = true; box.disabled = true;
-        lbl.classList.add('checked'); lbl.classList.remove('locked');
-        sync.textContent = 'Completed on ' + (m.completedOn || '') + (m.completedAt ? ' at ' + m.completedAt : '');
-        nextbtn.classList.remove('off');
-        return;
-      }
-      nextbtn.classList.add('off');
-      box.checked = false;
-      var allSec = secCount >= NSEC;
-      box.disabled = !(allSec && gatePassed);
-      lbl.classList.toggle('locked', box.disabled);
-      if (!allSec && !gatePassed) sync.textContent = 'To unlock: finish every section and pass the check questions.';
-      else if (!allSec) sync.textContent = 'To unlock: tick the finish box at the end of every section.';
-      else if (!gatePassed) sync.textContent = 'To unlock: pass the check questions above.';
-      else sync.textContent = '';
-    }
-
-    await P.start(user, MK, function(state){ paint(state); });
-
-    box.addEventListener('change', async function(){
-      if (!box.checked) return;
-      var state = P.setLocal(MK, true);          /* localStorage first */
-      paint(state);
-      sync.textContent = 'Saved on this device. Syncing\u2026';
-      try {
-        await P.sync(MK, true);
-        var m = (state.modules || {})[MK] || {};
-        sync.textContent = 'Completed on ' + (m.completedOn || '') + ' \u00b7 saved to your SF record';
-      } catch(e) {
-        console.error('[progress] sync failed', e);
-        sync.textContent = 'Saved on this device. It will sync to your SF record next time you open this page online.';
-      }
-    });
+    await P.start(user, null, function(state, online){ paint(state, online); });
   });
 })();
 </script>
